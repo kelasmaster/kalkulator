@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Shopee Ads GMV Profit Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 440px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        img {
+            max-width: 160px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            text-align: left;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 25px;
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #30B34B;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .result {
+            margin-top: 30px;
+            text-align: left;
+        }
+        .result p {
+            margin: 6px 0;
+        }
+        .status-untung { color: green; font-weight: bold; }
+        .status-rugi { color: red; font-weight: bold; }
+        .status-breakeven { color: orange; font-weight: bold; }
+        #actionButtons button {
+            margin: 10px auto;
+            display: block;
+            width: 100%;
+        }
+        footer {
+            margin-top: 50px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="nutracat.png" alt="NutraCat Logo" />
+        <h2>📊 Shopee Ads GMV Profit Calculator</h2>
+
+        <label for="gmv">Direct GMV (RM):</label>
+        <input type="number" id="gmv" step="0.01" />
+
+        <label for="adSpend">Ad Spend (RM):</label>
+        <input type="number" id="adSpend" step="0.01" />
+
+        <label for="cogs">COGS per Unit (RM):</label>
+        <input type="number" id="cogs" step="0.01" />
+
+        <label for="itemsSold">Direct Items Sold:</label>
+        <input type="number" id="itemsSold" step="1" />
+
+        <label for="fee">Shopee Fee (%):</label>
+        <input type="number" id="fee" value="15.66" step="0.01" />
+
+        <button onclick="calculate()">Kira Profit (GMV)</button>
+
+        <div class="result" id="output"></div>
+
+        <div id="actionButtons" style="display:none;">
+            <button onclick="copyResults()" style="background:#007bff; color:white;">📋 Salin Keputusan</button>
+            <button onclick="window.print()" style="background:#343a40; color:white;">📄 Cetak / Simpan ke PDF</button>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const gmv = parseFloat(document.getElementById("gmv").value);
+            const adSpend = parseFloat(document.getElementById("adSpend").value);
+            const cogs = parseFloat(document.getElementById("cogs").value);
+            const itemsSold = parseFloat(document.getElementById("itemsSold").value);
+            const fee = parseFloat(document.getElementById("fee").value);
+
+            if (!gmv || !adSpend || !cogs || !itemsSold || !fee) {
+                document.getElementById("output").innerHTML = "<p style='color:red'>Sila isi semua ruangan.</p>";
+                return;
+            }
+
+            const revenue = gmv;
+            const totalCOGS = cogs * itemsSold;
+            const feeAmount = (gmv * fee) / 100;
+            const profit = gmv - adSpend - totalCOGS - feeAmount;
+            const margin = (profit / gmv) * 100;
+            const roas = gmv / adSpend;
+
+            let statusClass = "", statusText = "";
+            if (profit > 0) {
+                statusClass = "status-untung"; statusText = "Untung";
+            } else if (profit < 0) {
+                statusClass = "status-rugi"; statusText = "Rugi";
+            } else {
+                statusClass = "status-breakeven"; statusText = "Break-even";
+            }
+
+            document.getElementById("output").innerHTML = `
+                <p><strong>Revenue:</strong> RM ${revenue.toFixed(2)}</p>
+                <p><strong>ROAS:</strong> ${roas.toFixed(2)}</p>
+                <p><strong>Profit (RM):</strong> RM ${profit.toFixed(2)}</p>
+                <p><strong>Profit Margin:</strong> ${margin.toFixed(2)}%</p>
+                <p><strong>Status:</strong> <span class="${statusClass}">${statusText}</span></p>
+            `;
+            document.getElementById("actionButtons").style.display = "block";
+        }
+
+        function copyResults() {
+            const resultText = document.getElementById("output").innerText;
+            navigator.clipboard.writeText(resultText)
+                .then(() => alert("Keputusan telah disalin!"))
+                .catch(err => alert("Gagal salin: " + err));
+        }
+    </script>
+
+    <footer>
+        <div class="container" style="background: transparent; box-shadow: none; text-align: left;">
+            <hr>
+            <p><strong>Nota:</strong> Gunakan nilai <em>Direct GMV</em> dan <em>Direct Items Sold</em> daripada Shopee Ads.</p>
+            <p>Shopee Fee digunakan: <strong>15.66%</strong> (setakat 16 April 2025).</p>
+            <p style="margin-top: 20px;">🛠️ Dibangunkan oleh <strong>Zaim</strong> | NutraCat | Shopee Ads GMV Profit Calculator • 2025</p>
+        </div>
+    </footer>
+</body>
+</html>
