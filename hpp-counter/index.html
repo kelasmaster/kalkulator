@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Kalkulator Harga Pokok Penjualan (HPP)</title>
+    <!-- Gunakan Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"  rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+        input[type="text"], input[type="number"] {
+            padding-right: 10px;
+        }
+        .form-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            font-family: monospace;
+        }
+        button {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Kalkulator Harga Pokok Penjualan (HPP)</h1>
+
+    <form id="hppForm">
+        <div class="mb-3">
+            <label for="biayaProduksi" class="form-label">Total Biaya Dasar (Rp) :</label>
+            <input type="text" class="form-control" id="biayaProduksi"
+                   placeholder="Total Biaya Pembelian / Bahan Baku / Biaya produksi selama 1 bulan" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="gajiKaryawan" class="form-label">Gaji Karyawan (Rp):</label>
+            <input type="text" class="form-control" id="gajiKaryawan"
+                   placeholder="Total Gaji Karyawan Selama 1 Bulan" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="biayaLainnya" class="form-label">Biaya Lainnya (Rp):</label>
+            <input type="text" class="form-control" id="biayaLainnya"
+                   placeholder="Listrik, Air, Packing, Transportasi dll selama 1 Bulan" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="jumlahProduk" class="form-label">Jumlah Produk :</label>
+            <input type="number" class="form-control" id="jumlahProduk"
+                   placeholder="Jumlah Total produk yang dihasilkan selama 1 bulan" required min="1">
+        </div>
+
+        <div class="form-buttons d-grid gap-2 d-md-block mt-4">
+            <button type="button" class="btn btn-primary" id="hitungButton">Hitung HPP</button>
+            <button type="reset" class="btn btn-secondary" id="resetButton">Reset</button>
+        </div>
+
+        <div id="hasil" class="result"></div>
+    </form>
+</div>
+
+<script>
+    // Fungsi untuk memformat angka dengan koma
+    function formatWithCommas(number) {
+        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Fungsi untuk menghapus format Rupiah menjadi angka
+    function removeFormatting(rupiah) {
+        return rupiah.replace(/\./g, '').replace(/[^0-9]/g, '');
+    }
+
+    // Fungsi untuk menghitung HPP
+    function hitungHPP() {
+        const biayaProduksi = parseInt(removeFormatting(document.getElementById('biayaProduksi').value)) || 0;
+        const gajiKaryawan = parseInt(removeFormatting(document.getElementById('gajiKaryawan').value)) || 0;
+        const biayaLainnya = parseInt(removeFormatting(document.getElementById('biayaLainnya').value)) || 0;
+        const jumlahProduk = parseInt(document.getElementById('jumlahProduk').value) || 0;
+
+        if (!jumlahProduk || jumlahProduk <= 0) {
+            alert('Jumlah produk harus lebih dari 0.');
+            return;
+        }
+
+        const totalBiaya = biayaProduksi + gajiKaryawan + biayaLainnya;
+        const hpp = totalBiaya / jumlahProduk;
+
+        document.getElementById('hasil').innerHTML = `
+            <span style="font-size: 20px;">HPP per unit:</span> 
+            <br>
+            <span style="font-size: 40px; font-weight: bold;">Rp ${hpp.toLocaleString('id-ID')}</span>
+        `;
+    }
+
+    // Fungsi untuk mereset hasil
+    function resetForm() {
+        document.getElementById('hasil').innerText = '';
+    }
+
+    // Event Listener untuk tombol
+    document.getElementById('hitungButton').addEventListener('click', hitungHPP);
+    document.getElementById('resetButton').addEventListener('click', resetForm);
+
+    // Event Listener untuk memformat input dengan koma
+    const inputs = ['biayaProduksi', 'gajiKaryawan', 'biayaLainnya'];
+    inputs.forEach(inputId => {
+        const inputElement = document.getElementById(inputId);
+        inputElement.addEventListener('input', function () {
+            const value = removeFormatting(this.value);
+            this.value = formatWithCommas(value);
+        });
+    });
+</script>
+
+</body>
+</html>
