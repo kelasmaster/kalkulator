@@ -2,66 +2,169 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Kalkulator HPP & Keuntungan</title>
-    
-    <!-- Gunakan CDN lain untuk Bootstrap -->
+    <title>Kalkulator Estimasi Keuntungan</title>
+
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" 
           integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2ltFVQ="
           crossorigin="anonymous">
+
+    <style>
+        body {
+            background-color: #f9f9f9;
+        }
+        .form-buttons {
+            margin-top: 1rem;
+        }
+        .result-box {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+    </style>
 </head>
 <body class="container mt-5">
+    <h2 class="mb-4 text-center">Kalkulator Estimasi Keuntungan</h2>
 
-<h2 class="mb-4 text-center">Kalkulator Estimasi Keuntungan</h2>
+    <form id="hppForm" novalidate>
+        <p class="text-center">Isi semua kolom dengan benar, jika tidak ada nilainya isi dengan angka 0</p>
 
-<form id="hppForm" novalidate>
-    <p style="text-align: center;">Isi semua kolom dengan benar, jika tidak ada nilainya isi dengan angka 0</p>
+        <div class="form-group">
+            <label for="costPrice">Harga Pokok Penjualan / HPP (Rp)</label>
+            <input type="text" class="form-control" id="costPrice" placeholder="Masukan Harga Pokok Penjualan (HPP)" required>
+            <div class="invalid-feedback">Harap masukkan harga pokok yang valid.</div>
+        </div>
 
-    <div class="form-group">
-        <label for="costPrice">Harga Pokok Penjualan / HPP (Rp)</label>
-        <input type="text" class="form-control" id="costPrice" placeholder="Masukan Harga Pokok Penjualan (HPP)" required>
-        <div class="invalid-feedback">Harap masukkan harga pokok yang valid.</div>
+        <div class="form-group">
+            <label for="sellingPrice">Perkiraan Harga Jual (IDR)</label>
+            <input type="text" class="form-control" id="sellingPrice" placeholder="Masukkan perkiraan Harga Jual yang di inginkan" required>
+            <div class="invalid-feedback">Harap masukkan harga jual yang valid.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="advertisingCost">Estimasi Biaya Iklan (%)</label>
+            <input type="number" class="form-control" id="advertisingCost" placeholder="Masukkan estimasi Persentase biaya iklan terhadap harga jual" required>
+            <div class="invalid-feedback">Harap masukkan biaya iklan yang valid.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="affiliateCommission">Estimasi Komisi Afiliasi (%)</label>
+            <input type="number" class="form-control" id="affiliateCommission" placeholder="Masukkan estimasi komisi afiliasi atau tulis 0 jika tidak Ikut Program Affiliasi" required>
+            <div class="invalid-feedback">Harap masukkan komisi afiliasi yang valid.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="adminCost">Estimasi Biaya Admin dan Fee lainnya (%)</label>
+            <input type="number" class="form-control" id="adminCost" placeholder="Masukkan estimasi Persentase biaya admin Marketplace" required>
+            <div class="invalid-feedback">Harap masukkan biaya admin Shopee yang valid.</div>
+        </div>
+
+        <!-- Tombol -->
+        <div class="form-buttons d-flex justify-content-between mb-4">
+            <button type="button" id="calculateButton" class="btn btn-primary">Hitung Estimasi Keuntungan</button>
+            <button type="reset" id="resetButton" class="btn btn-secondary">Reset</button>
+        </div>
+    </form>
+
+    <!-- Hasil ditampilkan di sini -->
+    <div class="result-box">
+        <h2 class="mt-4 text-danger font-weight-bold">Dengan Harga Jual : Rp.<span id="sellingPriceDisplay">0</span></h2>
+        <h2 class="text-success">Estimasi Keuntungan : Rp. <span id="estimatedProfit">0</span></h2>
+        <h2 class="text-success">Persentase Keuntungan : <span id="profitPercentage">0%</span></h2>
+        <div id="explanation" class="mt-3"></div>
     </div>
 
-    <div class="form-group">
-        <label for="sellingPrice">Perkiraan Harga Jual (IDR)</label>
-        <input type="text" class="form-control" id="sellingPrice" placeholder="Masukkan perkiraan Harga Jual yang di inginkan" required>
-        <div class="invalid-feedback">Harap masukkan harga jual yang valid.</div>
-    </div>
+    <!-- JavaScript -->
+    <script>
+        // Fungsi untuk memformat angka dengan koma ribuan
+        function formatNumberWithCommas(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
 
-    <div class="form-group">
-        <label for="advertisingCost">Estimasi Biaya Iklan (%)</label>
-        <input type="number" class="form-control" id="advertisingCost" placeholder="Masukkan estimasi Persentase biaya iklan terhadap harga jual" required>
-        <div class="invalid-feedback">Harap masukkan biaya iklan yang valid.</div>
-    </div>
+        // Fungsi untuk memperbarui input angka dengan format ribuan
+        function updateInputWithFormat(inputId) {
+            const inputElement = document.getElementById(inputId);
+            const rawValue = inputElement.value.replace(/,/g, ""); // Hilangkan koma sebelumnya
+            if (!isNaN(rawValue) && rawValue !== "") {
+                // Simpan posisi kursor
+                const cursorPosition = inputElement.selectionStart;
 
-    <div class="form-group">
-        <label for="affiliateCommission">Estimasi Komisi Afiliasi (%)</label>
-        <input type="number" class="form-control" id="affiliateCommission" placeholder="Masukkan estimasi komisi afiliasi atau tulis 0 jika tidak Ikut Program Affiliasi" required>
-        <div class="invalid-feedback">Harap masukkan komisi afiliasi yang valid.</div>
-    </div>
+                // Format angka dengan koma ribuan
+                const formattedValue = formatNumberWithCommas(rawValue);
 
-    <div class="form-group">
-        <label for="adminCost">Estimasi Biaya Admin dan Fee lainnya (%)</label>
-        <input type="number" class="form-control" id="adminCost" placeholder="Masukkan estimasi Persentase biaya admin Marketplace" required>
-        <div class="invalid-feedback">Harap masukkan biaya admin Shopee yang valid.</div>
-    </div>
+                // Perbarui nilai input tanpa mengganggu kursor
+                inputElement.value = formattedValue;
 
-    <!-- Tombol -->
-    <div class="form-buttons d-flex justify-content-between mb-4">
-        <button type="button" id="calculateButton" class="btn btn-primary">Hitung Estimasi Keuntungan</button>
-        <button type="reset" id="resetButton" class="btn btn-secondary">Reset</button>
-    </div>
-</form>
+                // Kembalikan posisi kursor ke tempat semula
+                const newCursorPosition = cursorPosition + (formattedValue.length - rawValue.length);
+                inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
+            }
+        }
 
-<!-- Hasil ditampilkan di sini -->
-<h2 class="mt-4 text-danger font-weight-bold">Dengan Harga Jual : Rp.<span id="sellingPriceDisplay">0</span></h2>
-<h2 class="text-success">Estimasi Keuntungan : Rp. <span id="estimatedProfit">0</span></h2>
-<h2 class="text-success">Persentase Keuntungan : <span id="profitPercentage">0%</span></h2>
+        // Tambahkan event listener untuk semua input angka
+        ['costPrice', 'sellingPrice', 'advertisingCost', 'affiliateCommission', 'adminCost'].forEach(id => {
+            const inputElement = document.getElementById(id);
+            inputElement.addEventListener('input', () => {
+                const value = inputElement.value.replace(/,/g, "");
+                if (!/^\d*$/.test(value)) {
+                    inputElement.value = value.replace(/[^\d]/g, ""); // Hanya izinkan angka
+                } else {
+                    updateInputWithFormat(id);
+                }
+            });
+        });
 
-<div id="explanation" class="mt-3"></div>
+        // Event listener untuk tombol reset
+        document.getElementById('resetButton').addEventListener('click', function () {
+            // Mengatur hasil perhitungan kembali ke nilai awal
+            document.getElementById('sellingPriceDisplay').innerText = '0';
+            document.getElementById('estimatedProfit').innerText = '0';
+            document.getElementById('profitPercentage').innerText = '0%';
+            document.getElementById('explanation').innerHTML = ''; // Menghapus penjelasan
+        });
 
-<!-- Script -->
-<script src="script.js"></script>
+        // Logika perhitungan
+        document.getElementById('calculateButton').addEventListener('click', function () {
+            // Ambil nilai input dan hilangkan koma ribuan
+            const costPrice = parseFloat(document.getElementById('costPrice').value.replace(/,/g, ""));
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value.replace(/,/g, ""));
+            const advertisingCostPercentage = parseFloat(document.getElementById('advertisingCost').value.replace(/,/g, ""));
+            const affiliateCommissionPercentage = parseFloat(document.getElementById('affiliateCommission').value.replace(/,/g, ""));
+            const adminCostPercentage = parseFloat(document.getElementById('adminCost').value.replace(/,/g, ""));
 
+            // Validasi input
+            if (!isNaN(costPrice) && !isNaN(sellingPrice) && !isNaN(advertisingCostPercentage) && !isNaN(affiliateCommissionPercentage) && !isNaN(adminCostPercentage)) {
+                // Perhitungan biaya
+                const advertisingCost = (advertisingCostPercentage / 100) * sellingPrice;
+                const affiliateCommission = (affiliateCommissionPercentage / 100) * sellingPrice;
+                const adminCost = (adminCostPercentage / 100) * sellingPrice;
+
+                // Estimasi keuntungan
+                const estimatedProfit = sellingPrice - costPrice - (advertisingCost + affiliateCommission + adminCost);
+                const profitPercentage = (estimatedProfit / costPrice) * 100;
+
+                // Tampilkan hasil
+                document.getElementById('sellingPriceDisplay').innerText = formatNumberWithCommas(sellingPrice.toFixed(0));
+                document.getElementById('estimatedProfit').innerText = formatNumberWithCommas(estimatedProfit.toFixed(0));
+                document.getElementById('profitPercentage').innerText = profitPercentage.toFixed(0) + '%';
+
+                // Tampilkan penjelasan
+                const explanation = `
+                    <h4>Penjelasan:</h4>
+                    <p><strong>Harga Pokok:</strong> ${formatNumberWithCommas(costPrice.toFixed(0))}</p>
+                    <p><strong>Perkiraan Harga Jual:</strong> ${formatNumberWithCommas(sellingPrice.toFixed(0))}</p>
+                    <p><strong>Estimasi Biaya Iklan:</strong> ${formatNumberWithCommas(advertisingCost.toFixed(0))} (${advertisingCostPercentage}%)</p>
+                    <p><strong>Estimasi Komisi Afiliasi:</strong> ${formatNumberWithCommas(affiliateCommission.toFixed(0))} (${affiliateCommissionPercentage}%)</p>
+                    <p><strong>Estimasi Biaya Admin Shopee:</strong> ${formatNumberWithCommas(adminCost.toFixed(0))} (${adminCostPercentage}%)</p>
+                    <p><strong>Estimasi Keuntungan:</strong> ${formatNumberWithCommas(estimatedProfit.toFixed(0))}</p>
+                    <p><strong>Persentase Keuntungan:</strong> ${profitPercentage.toFixed(0)}%</p>
+                `;
+                document.getElementById('explanation').innerHTML = explanation;
+            } else {
+                alert('Harap isi semua nilai dengan benar.');
+            }
+        });
+    </script>
 </body>
 </html>
