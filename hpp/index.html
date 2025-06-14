@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator HPP Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --border-radius: 10px;
+            --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        input::placeholder {
+            color: #adb5bd;
+            font-size: 14px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #hitungButton {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        #hitungButton:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        #resetButton {
+            background-color: #e9ecef;
+            color: var(--dark);
+        }
+
+        #resetButton:hover {
+            background-color: #dee2e6;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            text-align: center;
+            display: none;
+        }
+
+        .result h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 10px 0;
+        }
+
+        .result-details {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #495057;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group span {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .input-group input {
+            padding-left: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .form-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kalkulator Harga Pokok Penjualan</h1>
+        
+        <form id="hppForm">
+            <div class="form-group">
+                <label for="biayaProduksi">Total Biaya Dasar</label>
+                <div class="input-group">
+                    <span>Rp</span>
+                    <input type="text" id="biayaProduksi" placeholder="Total biaya pembelian/bahan baku/produksi per bulan" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="gajiKaryawan">Gaji Karyawan</label>
+                <div class="input-group">
+                    <span>Rp</span>
+                    <input type="text" id="gajiKaryawan" placeholder="Total gaji karyawan per bulan" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="biayaLainnya">Biaya Lainnya</label>
+                <div class="input-group">
+                    <span>Rp</span>
+                    <input type="text" id="biayaLainnya" placeholder="Listrik, air, packing, transportasi, dll" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="jumlahProduk">Jumlah Produk</label>
+                <input type="number" id="jumlahProduk" placeholder="Total produk yang dihasilkan per bulan" required min="1">
+            </div>
+            
+            <div class="form-buttons">
+                <button type="button" id="hitungButton">Hitung HPP</button>
+                <button type="reset" id="resetButton">Reset</button>
+            </div>
+            
+            <div id="hasil" class="result">
+                <h2>Harga Pokok Penjualan per Unit</h2>
+                <div class="result-value" id="hppResult">Rp 0</div>
+                <div class="result-details">
+                    <p>HPP dihitung berdasarkan total biaya dibagi jumlah produk</p>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Fungsi untuk memformat angka dengan koma
+        function formatWithCommas(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Fungsi untuk menghapus format Rupiah menjadi angka
+        function removeFormatting(rupiah) {
+            return rupiah.replace(/\./g, '').replace(/[^0-9]/g, '');
+        }
+
+        // Fungsi untuk menghitung HPP
+        function hitungHPP() {
+            const biayaProduksi = parseInt(removeFormatting(document.getElementById('biayaProduksi').value)) || 0;
+            const gajiKaryawan = parseInt(removeFormatting(document.getElementById('gajiKaryawan').value)) || 0;
+            const biayaLainnya = parseInt(removeFormatting(document.getElementById('biayaLainnya').value)) || 0;
+            const jumlahProduk = parseInt(document.getElementById('jumlahProduk').value) || 0;
+
+            // Validasi untuk memastikan jumlahProduk lebih dari 0
+            if (!jumlahProduk || jumlahProduk <= 0) {
+                alert('Jumlah produk harus lebih dari 0.');
+                return;
+            }
+
+            const totalBiaya = biayaProduksi + gajiKaryawan + biayaLainnya;
+            const hpp = totalBiaya / jumlahProduk;
+
+            // Menampilkan hasil
+            const hasilDiv = document.getElementById('hasil');
+            document.getElementById('hppResult').textContent = `Rp ${hpp.toLocaleString('id-ID')}`;
+            hasilDiv.style.display = 'block';
+
+            // Scroll ke hasil
+            hasilDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Fungsi untuk mereset form
+        function resetForm() {
+            document.getElementById('hasil').style.display = 'none';
+        }
+
+        // Event Listener untuk tombol
+        document.getElementById('hitungButton').addEventListener('click', hitungHPP);
+        document.getElementById('resetButton').addEventListener('click', resetForm);
+
+        // Event Listener untuk memformat input dengan titik sebagai pemisah ribuan
+        const inputs = ['biayaProduksi', 'gajiKaryawan', 'biayaLainnya'];
+        inputs.forEach(inputId => {
+            const inputElement = document.getElementById(inputId);
+            inputElement.addEventListener('input', function() {
+                const value = removeFormatting(this.value);
+                this.value = formatWithCommas(value);
+            });
+        });
+    </script>
+</body>
+</html>
