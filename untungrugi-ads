@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalkulator Untung Rugi Ads</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"].error,
+    input[type="number"].error {
+      border-color: red;
+      background-color: #ffe6e6;
+    }
+
+    .form-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #calculateButton {
+      background-color: #28a745;
+      color: white;
+    }
+
+    #calculateButton:hover {
+      background-color: #218838;
+    }
+
+    #resetButton {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    #resetButton:hover {
+      background-color: #c82333;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-left: 4px solid #007bff;
+      background-color: #f1f6ff;
+      border-radius: 6px;
+    }
+
+    #totalProfitLoss {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .loss {
+      color: red;
+    }
+
+    .profit {
+      color: green;
+    }
+
+    #conclusion.boncos {
+      color: red;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    #conclusion.untung {
+      color: green;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1><b>Kalkulator Untung Rugi Ads</b></h1>
+
+    <form id="profitLossForm">
+
+      <div class="form-group">
+        <label for="salesFromAds">Penjualan dari Iklan (Rp)</label>
+        <input type="text" id="salesFromAds" data-format="number"
+          placeholder="Masukkan Penjualan dari Iklan, contoh : 5.035.000" required />
+      </div>
+
+      <div class="form-group">
+        <label for="productsSold">Jumlah Produk Terjual</label>
+        <input type="number" id="productsSold" placeholder="Masukkan jumlah produk terjual, contoh:31" required />
+      </div>
+
+      <div class="form-group">
+        <label for="totalAdCost">Total Biaya Iklan (Rp)</label>
+        <input type="text" id="totalAdCost" data-format="number"
+          placeholder="Masukkan Total Biaya Iklan, contoh : 480.809" required />
+      </div>
+
+      <div class="form-group">
+        <label for="adminFeePercentage">Persentase Biaya Admin</label>
+        <input type="number" id="adminFeePercentage"
+          placeholder="Masukkan persentase biaya admin, contoh : 13" required />
+      </div>
+
+      <div class="form-group">
+        <label for="productCost">HPP Produk (Rp)</label>
+        <input type="text" id="productCost" data-format="number"
+          placeholder="Masukkan Biaya Per Produk, Contoh : 125.000" required />
+      </div>
+
+      <div class="form-buttons">
+        <button type="button" id="calculateButton">Hitung</button>
+        <button type="button" id="resetButton">Reset</button>
+      </div>
+
+    </form>
+
+    <div id="result" style="display: none;">
+      <p>
+        <span id="resultLabel">Pendapatan:</span>
+        <span id="totalProfitLoss"></span>
+      </p>
+      <p id="profitPerProduct"></p>
+      <p id="roasValue"></p>
+      <p id="conclusion"></p>
+    </div>
+  </div>
+
+  <script>
+    // Fungsi untuk memformat angka dengan titik ribuan
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function formatInput(event) {
+      let value = event.target.value.replace(/[^0-9]/g, "");
+      if (event.target.id === 'adminFeePercentage' && parseFloat(value) > 100) {
+        value = "100";
+      }
+      event.target.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    document.querySelectorAll('input[data-format="number"]').forEach(input => {
+      input.addEventListener('input', formatInput);
+    });
+
+    // Validasi form dan hitung profit/loss
+    function calculateProfitLoss() {
+      const salesFromAds = parseFloat(document.getElementById('salesFromAds').value.replace(/,/g, "")) || 0;
+      const productsSold = parseFloat(document.getElementById('productsSold').value) || 0;
+      const totalAdCost = parseFloat(document.getElementById('totalAdCost').value.replace(/,/g, "")) || 0;
+      const adminFeePercentage = parseFloat(document.getElementById('adminFeePercentage').value) / 100 || 0;
+      const productCost = parseFloat(document.getElementById('productCost').value.replace(/,/g, "")) || 0;
+
+      const totalModal = productsSold * productCost;
+      const totalAdminFee = adminFeePercentage * salesFromAds;
+      const totalCost = totalModal + totalAdminFee + totalAdCost;
+      const totalProfitLoss = salesFromAds - totalCost;
+      const roasValue = totalAdCost > 0 ? (salesFromAds / totalAdCost).toFixed(2) : 0;
+      const profitPerProduct = productsSold > 0 ? (totalProfitLoss / productsSold).toFixed(2) : 0;
+
+      const totalProfitLossElement = document.getElementById('totalProfitLoss');
+      const conclusionElement = document.getElementById('conclusion');
+      const resultLabel = document.getElementById('resultLabel');
+
+      if (totalProfitLoss < 0) {
+        totalProfitLossElement.classList.add('loss');
+        totalProfitLossElement.classList.remove('profit');
+        conclusionElement.innerText = "BONCOS";
+        conclusionElement.classList.add('boncos');
+        conclusionElement.classList.remove('untung');
+        resultLabel.innerText = "Rugi:";
+      } else {
+        totalProfitLossElement.classList.add('profit');
+        totalProfitLossElement.classList.remove('loss');
+        conclusionElement.innerText = "UNTUNG";
+        conclusionElement.classList.add('untung');
+        conclusionElement.classList.remove('boncos');
+        resultLabel.innerText = "UNTUNG:";
+      }
+
+      totalProfitLossElement.innerText = `Rp. ${formatNumber(totalProfitLoss.toFixed(2))}`;
+      document.getElementById('profitPerProduct').innerText = `Untung / Rugi per Produk: Rp. ${formatNumber(profitPerProduct)}`;
+      document.getElementById('roasValue').innerText = `ROAS Aktual: ${formatNumber(roasValue)}`;
+
+      document.getElementById('result').style.display = 'block';
+    }
+
+    document.getElementById('calculateButton').addEventListener('click', function () {
+      if (validateForm()) {
+        calculateProfitLoss();
+      }
+    });
+
+    document.getElementById('resetButton').addEventListener('click', function () {
+      document.getElementById('profitLossForm').reset();
+      document.getElementById('result').style.display = 'none';
+    });
+
+    function validateForm() {
+      let isValid = true;
+      const inputs = document.querySelectorAll('#profitLossForm input');
+      inputs.forEach(input => {
+        if (!input.value.trim()) {
+          input.classList.add('error');
+          isValid = false;
+        } else {
+          input.classList.remove('error');
+        }
+      });
+
+      const adminFeePercentage = parseFloat(document.getElementById('adminFeePercentage').value.replace(/,/g, ""));
+      if (adminFeePercentage > 100) {
+        alert("Persentase Biaya Admin tidak boleh lebih dari 100!");
+        isValid = false;
+      }
+
+      const salesFromAds = parseFloat(document.getElementById('salesFromAds').value.replace(/,/g, ""));
+      const productsSold = parseFloat(document.getElementById('productsSold').value);
+
+      if (salesFromAds > 0 && productsSold <= 0) {
+        alert("Cek Kembali Data yang Anda Input! Jika Penjualan dari Iklan (Rp) lebih dari 0, maka Jumlah Produk Terjual harus lebih dari 0.");
+        isValid = false;
+      }
+
+      if (productsSold > 0 && salesFromAds <= 0) {
+        alert("Cek Kembali Data yang Anda Input!, Jika Jumlah Produk Terjual lebih dari 0, maka Penjualan dari Iklan (Rp) harus lebih dari 0.");
+        isValid = false;
+      }
+
+      if (!isValid) {
+        alert("Harap isi semua kolom yang wajib diisi!");
+      }
+
+      return isValid;
+    }
+  </script>
+</body>
+</html>
