@@ -5,93 +5,125 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kalkulator Target ROAS untuk Shopee Ads</title>
 
-  <!-- Menggunakan jsDelivr sebagai CDN Bootstrap 4.5.2 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css"  integrity="sha384-JcKb8qrcG0Yw+ENWfCibESV7XHOZbFktE1FQ6CN6xg==" crossorigin="anonymous">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css" 
+        integrity="sha384-JcKb8qrcG0Yw+ENWfCibESV7XHOZbFktE1FQ6CN6xg=="
+        crossorigin="anonymous">
 
+  <!-- Custom CSS -->
   <style>
     body {
+      background-color: #f8f9fa;
       padding: 2rem;
-      max-width: 800px;
+    }
+    .container {
+      max-width: 700px;
       margin: auto;
-      font-family: Arial, sans-serif;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-    .result-item {
-      margin-top: 1rem;
-    }
-    .error-message {
-      margin-top: 1rem;
+    h1 {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 2rem;
     }
     input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 0.375rem 0.75rem;
-      box-sizing: border-box;
+      padding-right: 10px;
+    }
+    .form-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .result {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background-color: #e9ecef;
+      border-radius: 10px;
+      text-align: center;
+      font-family: monospace;
+    }
+    button {
+      width: 100%;
+    }
+    .error-message {
+      color: red;
+      margin-top: 1rem;
+    }
+    ul {
+      margin-top: 1rem;
+      padding-left: 1.2rem;
     }
   </style>
 </head>
 <body>
 
-  <h1 class="text-center"><b>Kalkulator Target ROAS untuk Shopee Ads</b></h1>
+  <div class="container">
+    <h1>Kalkulator Target ROAS untuk Shopee Ads</h1>
 
-  <form id="roasForm">
-    <p class="text-center">Isi semua kolom dengan benar, jika tidak ada nilainya isi dengan angka 0</p>
+    <form id="roasForm">
+      <p class="text-center">Isi semua kolom dengan benar, jika tidak ada nilainya isi dengan angka 0</p>
 
-    <div class="form-group">
-      <label for="sellingPrice">Harga Jual:</label>
-      <input type="text" id="sellingPrice" placeholder="Masukkan Harga Jual Produk setelah Diskon" required>
-    </div>
+      <div class="form-group">
+        <label for="sellingPrice">Harga Jual:</label>
+        <input type="text" id="sellingPrice" placeholder="Masukkan Harga Jual Produk setelah Diskon" required>
+      </div>
 
-    <div class="form-group">
-      <label for="voucher">Voucher (%):</label>
-      <input type="number" id="voucher" placeholder="Masukkan Nilai Persentase Voucher yang berlaku" required>
-    </div>
+      <div class="form-group">
+        <label for="voucher">Voucher (%):</label>
+        <input type="number" id="voucher" placeholder="Masukkan Nilai Persentase Voucher yang berlaku" required>
+      </div>
 
-    <div class="form-group">
-      <label for="voucherRp">Voucher Rp:</label>
-      <input type="text" id="voucherRp" placeholder="Masukkan Nilai Voucher dalam Rupiah" required>
-    </div>
+      <div class="form-group">
+        <label for="voucherRp">Voucher Rp:</label>
+        <input type="text" id="voucherRp" placeholder="Masukkan Nilai Voucher dalam Rupiah" required>
+      </div>
 
-    <div class="form-group">
-      <label for="adminFee">Biaya Admin (%):</label>
-      <input type="number" id="adminFee" placeholder="Masukkan Persentase Biaya Admin Marketplace" required>
-    </div>
+      <div class="form-group">
+        <label for="adminFee">Biaya Admin (%):</label>
+        <input type="number" id="adminFee" placeholder="Masukkan Persentase Biaya Admin Marketplace" required>
+      </div>
 
-    <div class="form-group">
-      <label for="affiliateCommission">Komisi Affiliate (%):</label>
-      <input type="number" id="affiliateCommission" placeholder="Masukkan Persentase Komisi Affiliasi, Tulis 0 Jika tidak ada." required>
-    </div>
+      <div class="form-group">
+        <label for="affiliateCommission">Komisi Affiliate (%):</label>
+        <input type="number" id="affiliateCommission" placeholder="Masukkan Persentase Komisi Affiliasi, Tulis 0 Jika tidak ada." required>
+      </div>
 
-    <div class="form-group">
-      <label for="productCost">HPP Produk:</label>
-      <input type="text" id="productCost" placeholder="Masukkan Harga HPP Produk" required>
-    </div>
+      <div class="form-group">
+        <label for="productCost">HPP Produk:</label>
+        <input type="text" id="productCost" placeholder="Masukkan Harga HPP Produk" required>
+      </div>
 
-    <div class="form-group">
-      <label for="adCostEstimate">Estimasi Keuntungan:</label>
-      <input type="text" id="adCostEstimate" placeholder="Masukkan Estimasi Keuntungan" required>
-    </div>
+      <div class="form-group">
+        <label for="adCostEstimate">Estimasi Keuntungan:</label>
+        <input type="text" id="adCostEstimate" placeholder="Masukkan Estimasi Keuntungan" required>
+      </div>
 
-    <div class="form-buttons d-flex justify-content-between mb-3">
-      <button type="button" id="calculateButton" class="btn btn-primary">Hitung</button>
-      <button type="button" id="resetButton" class="btn btn-secondary">Reset</button>
-    </div>
+      <div class="form-buttons">
+        <button type="button" id="calculateButton" class="btn btn-primary">Hitung</button>
+        <button type="button" id="resetButton" class="btn btn-secondary">Reset</button>
+      </div>
 
-    <!-- Hasil ditampilkan di sini -->
-    <div id="result" class="result" style="display: none;">
-      <h2 id="targetRoas" class="result-item text-danger font-weight-bold"></h2>
-      <h2 id="maxAdCost" class="result-item text-primary font-weight-bold"></h2>
-      <div id="explanation" class="explanation mt-2"></div>
-    </div>
+      <!-- Hasil ditampilkan di sini -->
+      <div id="result" class="result" style="display: none;">
+        <h2 id="targetRoas" class="text-danger font-weight-bold"></h2>
+        <h2 id="maxAdCost" class="text-primary font-weight-bold"></h2>
+        <div id="explanation" class="mt-2"></div>
+      </div>
 
-    <div id="errorMessage" class="error-message" style="color: red;"></div>
+      <div id="errorMessage" class="error-message"></div>
 
-    <br />
+      <ul>
+        <li>Masukkan Angka yang valid, nilai yang menghasilkan Angka Negatif atau berpotensi Rugi tidak akan menampilkan hasil.</li>
+      </ul>
+    </form>
+  </div>
 
-    <ul>
-      <li>Masukkan Angka yang valid, nilai yang menghasilkan Angka Negatif atau berpotensi Rugi tidak akan menampilkan hasil.</li>
-    </ul>
-  </form>
-
-  <!-- JS Script -->
+  <!-- JavaScript -->
   <script>
     // Fungsi untuk memformat angka dengan koma ribuan
     function formatNumberWithCommas(number) {
@@ -136,7 +168,7 @@
       const targetRoas = maxAdCost > 0 ? sellingPrice / maxAdCost : 0;
 
       if (maxAdCost <= 0) {
-        showError("Periksa Kembali angka yang di anda input. Pastikan Harga Jual Terisi dan nilainya Lebih Tinggi dari Semua Biaya & Keuntungan");
+        showError("Periksa kembali angka yang Anda masukkan. Pastikan Harga Jual Terisi dan nilainya Lebih Tinggi dari Semua Biaya & Keuntungan");
         document.getElementById('result').style.display = 'none';
         return;
       }
@@ -202,5 +234,6 @@
       document.getElementById(id).addEventListener('input', function () { checkMaxValue(this); });
     });
   </script>
+
 </body>
 </html>
