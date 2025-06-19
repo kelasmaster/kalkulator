@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalkulator Biaya Penjual Shopee</title>
+  <style>
+    :root {
+      --primary-color: #ff5722;
+      --secondary-color: #333;
+      --bg-color: #f9f9f9;
+      --border-radius: 8px;
+      --font-family: 'Segoe UI', sans-serif;
+      --input-padding: 10px 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-color);
+      padding: 20px;
+      color: var(--secondary-color);
+    }
+
+    .calculator-container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 24px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+    }
+
+    h2 span {
+      display: block;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .mode-selection {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: var(--input-padding);
+      border: 1px solid #ccc;
+      border-radius: var(--border-radius);
+      font-size: 14px;
+    }
+
+    .input-group-inline {
+      display: flex;
+      gap: 10px;
+    }
+
+    .input-group-inline input,
+    .input-group-inline select {
+      flex: 1;
+    }
+
+    .section-header {
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+
+    .subsection-header {
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      background: var(--primary-color);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #e64a19;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .result-container {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .input-summary-item,
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+
+    .total {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+      color: #555;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .tooltiptext {
+      visibility: hidden;
+      width: 220px;
+      background: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      padding: 8px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -110px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 13px;
+    }
+
+    .tooltip-container:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    @media (max-width: 600px) {
+      .mode-selection {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .input-group-inline {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator-container">
+  <h2>Kalkulator Biaya Penjual Shopee<br><span>by ZMCable</span></h2>
+
+  <!-- Mode Selection -->
+  <div class="mode-selection">
+    <label><input type="radio" name="calcMode" value="fromHargaBarang" checked onchange="toggleInputMode()"> Hitung dari Harga Barang</label>
+    <label><input type="radio" name="calcMode" value="fromTargetHarga" onchange="toggleInputMode()"> Hitung dari Target Harga Bersih</label>
+  </div>
+
+  <!-- Input Fields -->
+  <div id="inputHargaAsliProduk" class="form-group">
+    <label for="hargaAsliProduk">Harga Asli Produk (Rp):</label>
+    <input type="text" id="hargaAsliProduk" name="hargaAsliProduk" inputmode="numeric" onkeyup="formatHargaBarang(this)" onblur="formatHargaBarang(this)" value="0">
+  </div>
+
+  <div id="inputTargetHargaBersih" class="form-group hidden">
+    <label for="targetHargaBersih">Target Dana Diterima Penjual (Rp):</label>
+    <input type="text" id="targetHargaBersih" name="targetHargaBersih" inputmode="numeric" onkeyup="formatHargaBarang(this)" onblur="formatHargaBarang(this)" value="0">
+  </div>
+
+  <div class="form-group">
+    <label for="diskonPenjualToggle">Diskon Penjual</label>
+    <select id="diskonPenjualToggle" onchange="toggleDiskonPenjualInputs()">
+      <option value="tidak">Tidak</option>
+      <option value="ya">Ya</option>
+    </select>
+  </div>
+
+  <div id="diskonPenjualInputsContainer" class="hidden">
+    <div class="form-group">
+      <label for="DiskonProduk">Diskon Produk:</label>
+      <div class="input-group-inline">
+        <input type="text" id="DiskonProduk" name="DiskonProduk" inputmode="numeric" onkeyup="handleDiskonInput(this, 'diskonProdukUnit')" onblur="handleDiskonInput(this, 'diskonProdukUnit')" value="0">
+        <select id="diskonProdukUnit" onchange="resetDiskonInput('DiskonProduk')">
+          <option value="rupiah">Rp</option>
+          <option value="persen">%</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="VoucherToko">Voucher Toko:</label>
+      <div class="input-group-inline">
+        <input type="text" id="VoucherToko" name="VoucherToko" inputmode="numeric" onkeyup="handleDiskonInput(this, 'VoucherTokoUnit')" onblur="handleDiskonInput(this, 'VoucherTokoUnit')" value="0">
+        <select id="VoucherTokoUnit" onchange="resetDiskonInput('VoucherToko')">
+          <option value="rupiah">Rp</option>
+          <option value="persen">%</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">Biaya Administrasi & Program Promosi</div>
+
+  <div class="subsection-header">Biaya Administrasi</div>
+  <div class="form-group">
+    <label for="persentaseBiayaAdmin">Persentase Biaya Administrasi %:<br>(sesuaikan dengan kategori barang)</label>
+    <input type="number" id="persentaseBiayaAdmin" name="persentaseBiayaAdmin" value="0" step="0.01">
+  </div>
+
+  <div class="subsection-header">Program Promosi</div>
+  <div class="form-group">
+    <label for="promoProgram">Pilihan Program Promosi:
+      <span class="tooltip-container">&#9432;<span class="tooltiptext" id="promoTooltip"></span></span>
+    </label>
+    <select id="promoProgram" name="promoProgram" onchange="updatePromoInputs()">
+      <option value="tidak">Tidak</option>
+      <option value="promoXTRASaja">Promo XTRA Saja</option>
+      <option value="promoXTRADanGratisOngkirXTRA">Promo XTRA dan Gratis Ongkir XTRA</option>
+    </select>
+  </div>
+
+  <div id="promoXTRAFields" class="form-group hidden">
+    <label for="biayaPromoXTRA">Biaya Program Promo XTRA Otomatis (%):</label>
+    <input type="number" id="biayaPromoXTRA" name="biayaPromoXTRA" value="0" step="0.01" readonly>
+  </div>
+
+  <div id="GratisOngkirXTRAFields" class="form-group hidden">
+    <label for="biayaGratisOngkirXTRA">Biaya Program Gratis Ongkir XTRA (%):<br>(sesuaikan dengan kategori barang)</label>
+    <input type="number" id="biayaGratisOngkirXTRA" name="biayaGratisOngkirXTRA" value="0" step="0.01">
+  </div>
+
+  <div class="form-group">
+    <label for="liveXTRAToggle">Penjualan Live?</label>
+    <select id="liveXTRAToggle" onchange="toggleLiveXTRAInput()">
+      <option value="tidak">Tidak</option>
+      <option value="ya">Ya</option>
+    </select>
+  </div>
+
+  <div id="liveXTRAGroup" class="form-group hidden">
+    <label for="biayaLiveXTRA">Biaya Program Live XTRA (%):</label>
+    <input type="number" id="biayaLiveXTRA" name="biayaLiveXTRA" value="3" step="0.01" readonly>
+  </div>
+
+  <div class="form-group">
+    <label for="BiayaProgram">Biaya Program (Rp):</label>
+    <input type="text" id="BiayaProgram" name="BiayaProgram" inputmode="numeric" onkeyup="formatHargaBarang(this)" onblur="formatHargaBarang(this)" value="0">
+  </div>
+
+  <button onclick="calculate()">Hitung</button>
+
+  <!-- Results Section -->
+  <div class="result-container hidden" id="resultSection">
+    <h3 id="summaryTitle">Ringkasan Input:</h3>
+    
+    <div class="input-summary-item" id="summaryHargaAsliProdukRow"><span class="label">Harga Asli Produk:</span><span class="value" id="summaryHargaAsliProdukValue">Rp 0</span></div>
+    <div class="input-summary-item hidden" id="summaryTargetHargaBersihRow"><span class="label">Target Dana Diterima Penjual:</span><span class="value" id="summaryTargetHargaBersihValue">Rp 0</span></div>
+    <div class="input-summary-item" id="summaryDiskonProdukRow"><span class="label">Diskon Produk:</span><span class="value" id="summaryDiskonProduk">Rp 0</span></div>
+    <div class="input-summary-item" id="summaryVoucherTokoRow"><span class="label">Voucher Toko:</span><span class="value" id="summaryVoucherToko">0%</span></div>
+    <div class="input-summary-item"><span class="label">Total Pembayaran Pembeli:</span><span class="value" id="summaryTotalPembayaranPembeli">Rp 0</span></div>
+    <div class="input-summary-item"><span class="label">Persentase Biaya Admin:</span><span class="value" id="summaryPersentaseBiayaAdmin">0%</span></div>
+
+    <h3 style="margin-top: 15px;">Detail Potongan:</h3>
+    <div class="result-item"><span class="result-label">Biaya Administrasi:</span><span class="result-value" id="resultBiayaAdmin">Rp 0</span></div>
+    <div class="result-item hidden" id="rowBiayaGratisOngkirXTRA"><span class="result-label">Biaya Layanan Gratis Ongkir XTRA:</span><span class="result-value" id="resultGratisOngkirXTRA">Rp 0</span></div>
+    <div class="result-item hidden" id="rowBiayaPromoXTRA"><span class="result-label">Biaya Layanan Promo XTRA:</span><span class="result-value" id="resultPromoXTRA">Rp 0</span></div>
+    <div class="result-item hidden" id="rowBiayaLiveXTRA"><span class="result-label">Biaya Layanan Live XTRA:</span><span class="result-value" id="resultLiveXTRA">Rp 0</span></div>
+    <div class="result-item hidden" id="rowBiayaProgram"><span class="result-label">Biaya Program:</span><span class="result-value" id="resultBiayaProgram">Rp 0</span></div>
+    <div class="result-item hidden" id="rowDiskonProduk"><span class="result-label">Diskon Produk:</span><span class="result-value" id="resultDiskonProduk">Rp 0</span></div>
+    <div class="result-item hidden" id="rowVoucherToko"><span class="result-label">Voucher Toko:</span><span class="result-value" id="resultVoucherToko">Rp 0</span></div>
+
+    <div class="total"><span>Total Biaya Layanan:</span><span id="TotalBiayaLayanan">Rp 0</span></div>
+    <div class="total" id="finalResultRow"><span id="finalResultLabel">Dana Diterima Penjual:</span><span id="finalTotal">Rp 0</span></div>
+    <div class="total hidden" id="rekomendasiHargaJualRow"><span id="rekomendasiHargaJualLabel">Harga Jual Rekomendasi:</span><span id="rekomendasiHargaJualValue" style="color: var(--primary-color); font-size: 14px; font-weight: 700;">Rp 0</span></div>
+  </div>
+</div>
+
+<!-- Script from original file goes here -->
+<script>
+  // [Paste the original JS code from the uploaded file inside this script tag]
+</script>
+
+</body>
+</html>
