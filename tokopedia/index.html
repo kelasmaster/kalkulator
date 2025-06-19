@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kalkulator Tokopedia - ZMCable</title>
+  <style>
+    /* Reset & Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .calculator-container {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      padding: 30px 25px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    h2 span {
+      font-size: 16px;
+      font-weight: 400;
+      color: #7f8c8d;
+      display: block;
+    }
+
+    .mode-selection {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .mode-selection label {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: #34495e;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      color: #34495e;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .promotion-header {
+      margin-top: 20px;
+      font-weight: 600;
+      font-size: 15px;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #3498db;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .result-container {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .input-summary-item,
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #34495e;
+    }
+
+    .total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 10px;
+      color: #2c3e50;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator-container">
+  <h2>Kalkulator Tokopedia</h2>
+
+  <div class="mode-selection">
+    <label>
+      <input type="radio" name="calcMode" value="fromHargaBarang" checked onchange="toggleInput()"> Hitung dari Harga Barang
+    </label>
+    <label>
+      <input type="radio" name="calcMode" value="fromTargetHarga" onchange="toggleInput()"> Hitung dari Target Harga
+    </label>
+  </div>
+
+  <div id="inputHargaBarang" class="form-group">
+    <label for="hargaBarang">Harga Barang (Rp):</label>
+    <input type="text" id="hargaBarang" name="hargaBarang" inputmode="numeric" onkeyup="formatHargaBarang(this)" onblur="formatHargaBarang(this, true)">
+  </div>
+
+  <div id="inputTargetHargaBersih" class="form-group hidden">
+    <label for="targetHargaBersih">Target Harga Bersih (Setelah Potongan) (Rp):</label>
+    <input type="text" id="targetHargaBersih" name="targetHargaBersih" inputmode="numeric" onkeyup="formatHargaBarang(this)" onblur="formatHargaBarang(this, true)">
+  </div>
+
+  <div class="form-group">
+    <label for="komisiPlatform">Komisi Platform (%):</label>
+    <input type="number" id="komisiPlatform" name="komisiPlatform">
+  </div>
+
+  <div class="form-group">
+    <label for="komisiDinamis">Komisi Dinamis (%):</label>
+    <input type="number" id="komisiDinamis" name="komisiDinamis">
+  </div>
+
+  <div class="promotion-header">Program Promosi</div>
+
+  <div class="form-group">
+    <label for="biayaCashbackBonus">Biaya Layanan Cashback Bonus (%):</label>
+    <input type="number" id="biayaCashbackBonus" name="biayaCashbackBonus">
+  </div>
+
+  <div class="form-group">
+    <label for="biayaVoucherExtra">Biaya Layanan Voucher Extra (%):</label>
+    <input type="number" id="biayaVoucherExtra" name="biayaVoucherExtra">
+  </div>
+
+  <div class="form-group">
+    <label for="diskonPenjual">Diskon Penjual (%):</label>
+    <input type="number" id="diskonPenjual" name="diskonPenjual">
+  </div>
+
+  <button onclick="calculate()">Hitung</button>
+
+  <div class="result-container hidden" id="resultSection">
+    <h3 id="summaryTitle">Ringkasan Input:</h3>
+    <div class="input-summary-item">
+      <span class="label" id="summaryBasePriceLabel">Harga Barang Awal:</span>
+      <span class="value" id="summaryBasePriceValue">Rp 0</span>
+    </div>
+    <div class="input-summary-item">
+      <span class="label">Komisi Platform:</span>
+      <span class="value" id="summaryKomisiPlatform">0%</span>
+    </div>
+    <div class="input-summary-item">
+      <span class="label">Komisi Dinamis:</span>
+      <span class="value" id="summaryKomisiDinamis">0%</span>
+    </div>
+    <div class="input-summary-item">
+      <span class="label">Biaya Cashback Bonus:</span>
+      <span class="value" id="summaryBiayaCashbackBonus">0%</span>
+    </div>
+    <div class="input-summary-item">
+      <span class="label">Biaya Voucher Extra:</span>
+      <span class="value" id="summaryBiayaVoucherExtra">0%</span>
+    </div>
+    <div class="input-summary-item">
+      <span class="label">Diskon Penjual:</span>
+      <span class="value" id="summaryDiskonPenjual">0%</span>
+    </div>
+
+    <h3 style="margin-top: 15px;">Detail Potongan:</h3>
+    <div class="result-item"><span class="result-label">Komisi Platform:</span><span class="result-value" id="resultKomisiPlatform">Rp 0</span></div>
+    <div class="result-item"><span class="result-label">Komisi Dinamis:</span><span class="result-value" id="resultKomisiDinamis">Rp 0</span></div>
+    <div class="result-item"><span class="result-label">Biaya Layanan Cashback Bonus:</span><span class="result-value" id="resultCashbackBonus">Rp 0</span></div>
+    <div class="result-item"><span class="result-label">Biaya Layanan Voucher Extra:</span><span class="result-value" id="resultVoucherExtra">Rp 0</span></div>
+    <div class="result-item"><span class="result-label">Diskon Penjual:</span><span class="result-value" id="resultDiskonPenjual">Rp 0</span></div>
+
+    <div class="total"><span>Total Potongan:</span><span id="totalPotongan">Rp 0</span></div>
+    <div class="total" id="finalResultRow">
+      <span id="finalResultLabel">Total Setelah Potongan:</span>
+      <span id="finalTotal">Rp 0</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Your original JS logic goes here unchanged
+// Paste the entire script from your file inside this tag
+</script>
+
+</body>
+</html>
