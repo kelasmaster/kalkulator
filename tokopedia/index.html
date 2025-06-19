@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kalkulator Tokopedia - ZMCable</title>
+  <title>Kalkulator Tokopedia</title>
   <style>
     /* Reset & Base Styles */
     * {
@@ -151,7 +151,6 @@
 
 <div class="calculator-container">
   <h2>Kalkulator Tokopedia</h2>
-
   <div class="mode-selection">
     <label>
       <input type="radio" name="calcMode" value="fromHargaBarang" checked onchange="toggleInput()"> Hitung dari Harga Barang
@@ -160,46 +159,36 @@
       <input type="radio" name="calcMode" value="fromTargetHarga" onchange="toggleInput()"> Hitung dari Target Harga
     </label>
   </div>
-
   <div id="inputHargaBarang" class="form-group">
     <label for="hargaBarang">Harga Barang (Rp):</label>
     <input type="text" id="hargaBarang" name="hargaBarang" inputmode="numeric" onkeyup="formatHargaBarang(this)" onblur="formatHargaBarang(this, true)">
   </div>
-
   <div id="inputTargetHargaBersih" class="form-group hidden">
     <label for="targetHargaBersih">Target Harga Bersih (Setelah Potongan) (Rp):</label>
     <input type="text" id="targetHargaBersih" name="targetHargaBersih" inputmode="numeric" onkeyup="formatHargaBarang(this)" onblur="formatHargaBarang(this, true)">
   </div>
-
   <div class="form-group">
     <label for="komisiPlatform">Komisi Platform (%):</label>
     <input type="number" id="komisiPlatform" name="komisiPlatform">
   </div>
-
   <div class="form-group">
     <label for="komisiDinamis">Komisi Dinamis (%):</label>
     <input type="number" id="komisiDinamis" name="komisiDinamis">
   </div>
-
   <div class="promotion-header">Program Promosi</div>
-
   <div class="form-group">
     <label for="biayaCashbackBonus">Biaya Layanan Cashback Bonus (%):</label>
     <input type="number" id="biayaCashbackBonus" name="biayaCashbackBonus">
   </div>
-
   <div class="form-group">
     <label for="biayaVoucherExtra">Biaya Layanan Voucher Extra (%):</label>
     <input type="number" id="biayaVoucherExtra" name="biayaVoucherExtra">
   </div>
-
   <div class="form-group">
     <label for="diskonPenjual">Diskon Penjual (%):</label>
     <input type="number" id="diskonPenjual" name="diskonPenjual">
   </div>
-
   <button onclick="calculate()">Hitung</button>
-
   <div class="result-container hidden" id="resultSection">
     <h3 id="summaryTitle">Ringkasan Input:</h3>
     <div class="input-summary-item">
@@ -226,15 +215,31 @@
       <span class="label">Diskon Penjual:</span>
       <span class="value" id="summaryDiskonPenjual">0%</span>
     </div>
-
     <h3 style="margin-top: 15px;">Detail Potongan:</h3>
-    <div class="result-item"><span class="result-label">Komisi Platform:</span><span class="result-value" id="resultKomisiPlatform">Rp 0</span></div>
-    <div class="result-item"><span class="result-label">Komisi Dinamis:</span><span class="result-value" id="resultKomisiDinamis">Rp 0</span></div>
-    <div class="result-item"><span class="result-label">Biaya Layanan Cashback Bonus:</span><span class="result-value" id="resultCashbackBonus">Rp 0</span></div>
-    <div class="result-item"><span class="result-label">Biaya Layanan Voucher Extra:</span><span class="result-value" id="resultVoucherExtra">Rp 0</span></div>
-    <div class="result-item"><span class="result-label">Diskon Penjual:</span><span class="result-value" id="resultDiskonPenjual">Rp 0</span></div>
-
-    <div class="total"><span>Total Potongan:</span><span id="totalPotongan">Rp 0</span></div>
+    <div class="result-item">
+      <span class="result-label">Komisi Platform:</span>
+      <span class="result-value" id="resultKomisiPlatform">Rp 0</span>
+    </div>
+    <div class="result-item">
+      <span class="result-label">Komisi Dinamis:</span>
+      <span class="result-value" id="resultKomisiDinamis">Rp 0</span>
+    </div>
+    <div class="result-item">
+      <span class="result-label">Biaya Layanan Cashback Bonus:</span>
+      <span class="result-value" id="resultCashbackBonus">Rp 0</span>
+    </div>
+    <div class="result-item">
+      <span class="result-label">Biaya Layanan Voucher Extra:</span>
+      <span class="result-value" id="resultVoucherExtra">Rp 0</span>
+    </div>
+    <div class="result-item">
+      <span class="result-label">Diskon Penjual:</span>
+      <span class="result-value" id="resultDiskonPenjual">Rp 0</span>
+    </div>
+    <div class="total">
+      <span>Total Potongan:</span>
+      <span id="totalPotongan">Rp 0</span>
+    </div>
     <div class="total" id="finalResultRow">
       <span id="finalResultLabel">Total Setelah Potongan:</span>
       <span id="finalTotal">Rp 0</span>
@@ -243,8 +248,170 @@
 </div>
 
 <script>
-// Your original JS logic goes here unchanged
-// Paste the entire script from your file inside this tag
+function formatNumber(number) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(number);
+}
+function formatHargaInput(number) {
+    if (isNaN(number) || number === null) {
+        return '';
+    }
+    return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(number);
+}
+function cleanAndParse(stringValue) {
+    let cleanString = String(stringValue).replace(/[^0-9,]/g, '');
+    if (cleanString.includes(',')) {
+        cleanString = cleanString.replace(/,/g, '.');
+    }
+    cleanString = cleanString.replace(/\./g, '');
+    return parseFloat(cleanString) || 0;
+}
+function formatHargaBarang(inputElement, onBlur = false) {
+    let value = inputElement.value;
+    if (value === '') {
+        return;
+    }
+    value = value.replace(/[^0-9,]/g, '');
+    if (onBlur) {
+        const cleanedValue = cleanAndParse(value);
+        if (!isNaN(cleanedValue)) {
+            inputElement.value = formatHargaInput(cleanedValue);
+        } else {
+            inputElement.value = '';
+        }
+        return;
+    }
+    let tempValueForFormatting = value.replace(/,/g, '');
+    const numberValue = parseFloat(tempValueForFormatting) || 0;
+    if (!isNaN(numberValue)) {
+        let formatted = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(numberValue);
+        const originalParts = value.split(',');
+        if (originalParts.length > 1) {
+            formatted += ',' + originalParts[1];
+        }
+        inputElement.value = formatted;
+    } else {
+        inputElement.value = '';
+    }
+}
+function toggleInput() {
+    const mode = document.querySelector('input[name="calcMode"]:checked').value;
+    const inputHargaBarangDiv = document.getElementById('inputHargaBarang');
+    const inputTargetHargaBersihDiv = document.getElementById('inputTargetHargaBersih');
+    if (mode === 'fromHargaBarang') {
+        inputHargaBarangDiv.classList.remove('hidden');
+        inputTargetHargaBersihDiv.classList.add('hidden');
+        document.getElementById('targetHargaBersih').value = '';
+    } else {
+        inputHargaBarangDiv.classList.add('hidden');
+        inputTargetHargaBersihDiv.classList.remove('hidden');
+        document.getElementById('hargaBarang').value = '';
+    }
+    document.getElementById("resultSection").classList.add("hidden");
+}
+function calculate() {
+    const mode = document.querySelector('input[name="calcMode"]:checked').value;
+    let hargaBarang = 0;
+    let targetHargaBersih = 0;
+    const komisiPlatformPercent = parseFloat(document.getElementById("komisiPlatform").value) || 0;
+    const komisiDinamisPercent = parseFloat(document.getElementById("komisiDinamis").value) || 0;
+    const biayaCashbackBonusPercent = parseFloat(document.getElementById("biayaCashbackBonus").value) || 0;
+    const biayaVoucherExtraPercent = parseFloat(document.getElementById("biayaVoucherExtra").value) || 0;
+    const diskonPenjualPercent = parseFloat(document.getElementById("diskonPenjual").value) || 0;
+
+    const summaryTitle = document.getElementById("summaryTitle");
+    const summaryBasePriceLabel = document.getElementById("summaryBasePriceLabel");
+    const summaryBasePriceValue = document.getElementById("summaryBasePriceValue");
+    const finalResultLabel = document.getElementById("finalResultLabel");
+
+    if (mode === 'fromHargaBarang') {
+        hargaBarang = cleanAndParse(document.getElementById("hargaBarang").value);
+
+        const komisiPlatform = hargaBarang * (komisiPlatformPercent / 100);
+        const komisiDinamis = Math.min(hargaBarang * (komisiDinamisPercent / 100), 40000);
+        const biayaCashbackBonus = hargaBarang * (biayaCashbackBonusPercent / 100);
+        const biayaVoucherExtra = Math.min(hargaBarang * (biayaVoucherExtraPercent / 100), 30000);
+        const diskonPenjual = hargaBarang * (diskonPenjualPercent / 100);
+        const totalPotongan = komisiPlatform + komisiDinamis + biayaCashbackBonus + biayaVoucherExtra + diskonPenjual;
+        const finalTotal = hargaBarang - totalPotongan;
+
+        document.getElementById("resultKomisiPlatform").innerText = formatNumber(komisiPlatform);
+        document.getElementById("resultKomisiDinamis").innerText = formatNumber(komisiDinamis);
+        document.getElementById("resultCashbackBonus").innerText = formatNumber(biayaCashbackBonus);
+        document.getElementById("resultVoucherExtra").innerText = formatNumber(biayaVoucherExtra);
+        document.getElementById("resultDiskonPenjual").innerText = formatNumber(diskonPenjual);
+        document.getElementById("totalPotongan").innerText = formatNumber(totalPotongan);
+        document.getElementById("finalTotal").innerText = formatNumber(finalTotal);
+
+        summaryTitle.innerText = "Ringkasan Input:";
+        summaryBasePriceLabel.innerText = "Harga Barang Awal:";
+        summaryBasePriceValue.innerText = formatNumber(hargaBarang);
+        finalResultLabel.innerText = "Total Setelah Potongan:";
+
+    } else {
+        targetHargaBersih = cleanAndParse(document.getElementById("targetHargaBersih").value);
+
+        let totalPotonganPercentExcludingMax = (komisiPlatformPercent + komisiDinamisPercent + biayaCashbackBonusPercent + biayaVoucherExtraPercent + diskonPenjualPercent) / 100;
+        let estimatedHargaBarang = targetHargaBersih / (1 - totalPotonganPercentExcludingMax);
+
+        const komisiPlatformEst = estimatedHargaBarang * (komisiPlatformPercent / 100);
+        const komisiDinamisEst = Math.min(estimatedHargaBarang * (komisiDinamisPercent / 100), 40000);
+        const biayaCashbackBonusEst = estimatedHargaBarang * (biayaCashbackBonusPercent / 100);
+        const biayaVoucherExtraEst = Math.min(estimatedHargaBarang * (biayaVoucherExtraPercent / 100), 30000);
+        const diskonPenjualEst = estimatedHargaBarang * (diskonPenjualPercent / 100);
+        let totalPotonganEst = komisiPlatformEst + komisiDinamisEst + biayaCashbackBonusEst + biayaVoucherExtraEst + diskonPenjualEst;
+        let finalTotalEst = estimatedHargaBarang - totalPotonganEst;
+
+        if (finalTotalEst !== targetHargaBersih && totalPotonganPercentExcludingMax < 1) {
+            let diff = targetHargaBersih - finalTotalEst;
+            estimatedHargaBarang += diff / (1 - totalPotonganPercentExcludingMax);
+        }
+
+        const komisiPlatform = estimatedHargaBarang * (komisiPlatformPercent / 100);
+        const komisiDinamis = Math.min(estimatedHargaBarang * (komisiDinamisPercent / 100), 40000);
+        const biayaCashbackBonus = estimatedHargaBarang * (biayaCashbackBonusPercent / 100);
+        const biayaVoucherExtra = Math.min(estimatedHargaBarang * (biayaVoucherExtraPercent / 100), 30000);
+        const diskonPenjual = estimatedHargaBarang * (diskonPenjualPercent / 100);
+        const totalPotongan = komisiPlatform + komisiDinamis + biayaCashbackBonus + biayaVoucherExtra + diskonPenjual;
+
+        hargaBarang = estimatedHargaBarang;
+
+        document.getElementById("resultKomisiPlatform").innerText = formatNumber(komisiPlatform);
+        document.getElementById("resultKomisiDinamis").innerText = formatNumber(komisiDinamis);
+        document.getElementById("resultCashbackBonus").innerText = formatNumber(biayaCashbackBonus);
+        document.getElementById("resultVoucherExtra").innerText = formatNumber(biayaVoucherExtra);
+        document.getElementById("resultDiskonPenjual").innerText = formatNumber(diskonPenjual);
+        document.getElementById("totalPotongan").innerText = formatNumber(totalPotongan);
+        document.getElementById("finalTotal").innerText = formatNumber(targetHargaBersih);
+
+        summaryTitle.innerText = "Ringkasan Target:";
+        summaryBasePriceLabel.innerText = "Target Harga Bersih:";
+        summaryBasePriceValue.innerText = formatNumber(targetHargaBersih);
+        finalResultLabel.innerText = "Harga Barang Rekomendasi:";
+
+        document.getElementById("finalResultRow").querySelector('span[id="finalTotal"]').innerText = formatNumber(hargaBarang);
+        document.getElementById("finalResultRow").querySelector('span[id="finalResultLabel"]').innerText = "Harga Barang Rekomendasi:";
+    }
+
+    document.getElementById("summaryKomisiPlatform").innerText = komisiPlatformPercent + "%";
+    document.getElementById("summaryKomisiDinamis").innerText = komisiDinamisPercent + "%";
+    document.getElementById("summaryBiayaCashbackBonus").innerText = biayaCashbackBonusPercent + "%";
+    document.getElementById("summaryBiayaVoucherExtra").innerText = biayaVoucherExtraPercent + "%";
+    document.getElementById("summaryDiskonPenjual").innerText = diskonPenjualPercent + "%";
+
+    document.getElementById("resultSection").classList.remove("hidden");
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    toggleInput();
+    const hargaBarangInput = document.getElementById('hargaBarang');
+    if (hargaBarangInput.value) {
+        formatHargaBarang(hargaBarangInput, true);
+    }
+    const targetHargaBersihInput = document.getElementById('targetHargaBersih');
+    if (targetHargaBersihInput.value) {
+        formatHargaBarang(targetHargaBersihInput, true);
+    }
+});
 </script>
 
 </body>
