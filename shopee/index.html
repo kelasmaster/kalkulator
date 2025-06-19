@@ -189,7 +189,7 @@
 <body>
 
 <div class="calculator-container">
-  <h2>Kalkulator Biaya Penjual Shopee</h2>
+  <h2>Kalkulator Biaya Penjual Shopee<br><span>by ZMCable</span></h2>
 
   <!-- Mode Selection -->
   <div class="mode-selection">
@@ -315,9 +315,394 @@
   </div>
 </div>
 
-<!-- Script from original file goes here -->
 <script>
-  // [Paste the original JS code from the uploaded file inside this script tag]
+// Max Cap untuk Gratis Ongkir XTRA
+const MAX_CAP_GO_XTRA = 20000;
+// Max Cap untuk Promo XTRA
+const MAX_CAP_PROMO_XTRA = 10000;
+// Max Cap untuk Live XTRA
+const MAX_CAP_LIVE_XTRA = 20000;
+
+function formatNumber(number) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(number);
+}
+
+function cleanAndParse(stringValue, unit = 'rupiah') {
+    let cleanString = String(stringValue).replace(/[^0-9,.]/g, '');
+    cleanString = cleanString.replace(/\./g, '');
+    cleanString = cleanString.replace(/,/g, '.');
+    if (unit === 'persen') {
+        return parseFloat(cleanString) || 0;
+    } else {
+        return parseInt(cleanString, 10) || 0;
+    }
+}
+
+function handleDiskonInput(inputElement, unitSelectId) {
+    let value = inputElement.value;
+    const unit = document.getElementById(unitSelectId).value;
+    if (value === '') {
+        return;
+    }
+    let cleanString = value.replace(/[^0-9,.]/g, '');
+    cleanString = cleanString.replace(/\./g, '');
+    cleanString = cleanString.replace(/,/g, '.');
+    let numberValue;
+    if (unit === 'persen') {
+        numberValue = parseFloat(cleanString) || 0;
+        if (numberValue < 0) numberValue = 0;
+        if (numberValue > 100) numberValue = 100;
+        inputElement.value = numberValue;
+    } else {
+        numberValue = parseInt(cleanString, 10) || 0;
+        inputElement.value = new Intl.NumberFormat('id-ID').format(numberValue);
+    }
+}
+
+function resetDiskonInput(inputId) {
+    document.getElementById(inputId).value = '0';
+}
+
+function formatHargaBarang(inputElement) {
+    let value = inputElement.value;
+    if (value === '') {
+        return;
+    }
+    value = value.replace(/[^0-9]/g, '');
+    const numberValue = parseFloat(value) || 0;
+    if (!isNaN(numberValue)) {
+        inputElement.value = new Intl.NumberFormat('id-ID').format(numberValue);
+    } else {
+        inputElement.value = '';
+    }
+}
+
+function toggleInputMode() {
+    const mode = document.querySelector('input[name="calcMode"]:checked').value;
+    const inputHargaAsliProdukDiv = document.getElementById('inputHargaAsliProduk');
+    const inputTargetHargaBersihDiv = document.getElementById('inputTargetHargaBersih');
+    const summaryHargaAsliProdukRow = document.getElementById('summaryHargaAsliProdukRow');
+    const summaryTargetHargaBersihRow = document.getElementById('summaryTargetHargaBersihRow');
+    const rekomendasiHargaJualRow = document.getElementById('rekomendasiHargaJualRow');
+
+    if (mode === 'fromHargaBarang') {
+        inputHargaAsliProdukDiv.classList.remove('hidden');
+        inputTargetHargaBersihDiv.classList.add('hidden');
+        document.getElementById('targetHargaBersih').value = '0';
+        summaryHargaAsliProdukRow.classList.remove('hidden');
+        summaryTargetHargaBersihRow.classList.add('hidden');
+        rekomendasiHargaJualRow.classList.add('hidden');
+    } else {
+        inputHargaAsliProdukDiv.classList.add('hidden');
+        inputTargetHargaBersihDiv.classList.remove('hidden');
+        document.getElementById('hargaAsliProduk').value = '0';
+        summaryHargaAsliProdukRow.classList.add('hidden');
+        summaryTargetHargaBersihRow.classList.remove('hidden');
+        rekomendasiHargaJualRow.classList.remove('hidden');
+    }
+    document.getElementById("resultSection").classList.add("hidden");
+}
+
+function toggleDiskonPenjualInputs() {
+    const containerDiv = document.getElementById('diskonPenjualInputsContainer');
+    const selectElement = document.getElementById('diskonPenjualToggle');
+    const diskonProdukInput = document.getElementById('DiskonProduk');
+    const VoucherTokoInput = document.getElementById('VoucherToko');
+
+    if (selectElement.value === 'ya') {
+        containerDiv.classList.remove('hidden');
+        diskonProdukInput.value = '0';
+        document.getElementById('diskonProdukUnit').value = 'rupiah';
+        VoucherTokoInput.value = '0';
+        document.getElementById('VoucherTokoUnit').value = 'rupiah';
+    } else {
+        containerDiv.classList.add('hidden');
+        diskonProdukInput.value = '0';
+        document.getElementById('diskonProdukUnit').value = 'rupiah';
+        VoucherTokoInput.value = '0';
+        document.getElementById('VoucherTokoUnit').value = 'rupiah';
+    }
+    document.getElementById("resultSection").classList.add("hidden");
+}
+
+function toggleLiveXTRAInput() {
+    const liveXTRAGroup = document.getElementById('liveXTRAGroup');
+    const liveXTRAToggle = document.getElementById('liveXTRAToggle');
+    const biayaLiveXTRAInput = document.getElementById('biayaLiveXTRA');
+
+    if (liveXTRAToggle.value === 'ya') {
+        liveXTRAGroup.classList.remove('hidden');
+        biayaLiveXTRAInput.value = '3';
+    } else {
+        liveXTRAGroup.classList.add('hidden');
+        biayaLiveXTRAInput.value = '0';
+    }
+    document.getElementById("resultSection").classList.add("hidden");
+}
+
+function updatePromoInputs() {
+    const promoProgram = document.getElementById('promoProgram').value;
+    const promoXTRAFields = document.getElementById('promoXTRAFields');
+    const GratisOngkirXTRAFields = document.getElementById('GratisOngkirXTRAFields');
+    const biayaPromoXTRAInput = document.getElementById('biayaPromoXTRA');
+    const biayaGratisOngkirXTRAInput = document.getElementById('biayaGratisOngkirXTRA');
+    const promoTooltip = document.getElementById('promoTooltip');
+
+    biayaPromoXTRAInput.value = '0';
+    biayaGratisOngkirXTRAInput.value = '0';
+    promoXTRAFields.classList.add('hidden');
+    GratisOngkirXTRAFields.classList.add('hidden');
+    promoTooltip.innerText = '';
+
+    if (promoProgram === 'tidak') {
+        promoTooltip.innerText = 'Biaya Promo XTRA dan Gratis Ongkir XTRA adalah 0%.';
+    } else if (promoProgram === 'promoXTRASaja') {
+        biayaPromoXTRAInput.value = (2 * (1 - 0.30)).toFixed(2);
+        promoXTRAFields.classList.remove('hidden');
+        GratisOngkirXTRAFields.classList.remove('hidden');
+        promoTooltip.innerText = `Biaya Promo XTRA: 2% x Diskon 30% dari Biaya Layanan = 1.4% (maks. Rp${new Intl.NumberFormat('id-ID').format(MAX_CAP_PROMO_XTRA)}).\nBiaya Gratis Ongkir XTRA: Persentase sesuai input, maks. Rp${new Intl.NumberFormat('id-ID').format(MAX_CAP_GO_XTRA)}.`;
+    } else if (promoProgram === 'promoXTRADanGratisOngkirXTRA') {
+        biayaPromoXTRAInput.value = (2 * (1 - 0.50)).toFixed(2);
+        promoXTRAFields.classList.remove('hidden');
+        GratisOngkirXTRAFields.classList.remove('hidden');
+        promoTooltip.innerText = `Biaya Promo XTRA: 2% x Diskon 50% dari Biaya Layanan = 1% (maks. Rp${new Intl.NumberFormat('id-ID').format(MAX_CAP_PROMO_XTRA)}).\nBiaya Gratis Ongkir XTRA: Persentase sesuai input, maks. Rp${new Intl.NumberFormat('id-ID').format(MAX_CAP_GO_XTRA)}.`;
+    }
+    document.getElementById("resultSection").classList.add("hidden");
+}
+
+function calculate() {
+    const mode = document.querySelector('input[name="calcMode"]:checked').value;
+    let hargaAsliProduk = 0;
+    let targetDanaDiterimaPenjual = 0;
+    let totalPembayaranPembeli = 0; // Ini adalah harga jual final setelah diskon penjual
+    let DiskonProduk_value = cleanAndParse(document.getElementById("DiskonProduk").value, document.getElementById("diskonProdukUnit").value);
+    let diskonProdukUnit = document.getElementById("diskonProdukUnit").value;
+    let DiskonProduk_rupiah = 0;
+    let VoucherToko_value = cleanAndParse(document.getElementById("VoucherToko").value, document.getElementById("VoucherTokoUnit").value);
+    let VoucherTokoUnit = document.getElementById("VoucherTokoUnit").value;
+    let VoucherToko_rupiah = 0;
+    let BiayaProgram = cleanAndParse(document.getElementById("BiayaProgram").value);
+    const persentaseBiayaAdmin = parseFloat(document.getElementById("persentaseBiayaAdmin").value) || 0;
+    const biayaGratisOngkirXTRA_persen = parseFloat(document.getElementById("biayaGratisOngkirXTRA").value) || 0;
+    const biayaPromoXTRA_persen = parseFloat(document.getElementById("biayaPromoXTRA").value) || 0;
+    let biayaLiveXTRA_persen = 0;
+
+    if (document.getElementById('liveXTRAToggle').value === 'ya') {
+        biayaLiveXTRA_persen = parseFloat(document.getElementById("biayaLiveXTRA").value) || 0;
+    }
+
+    const promoProgramSelected = document.getElementById('promoProgram').value;
+    const summaryTitle = document.getElementById("summaryTitle");
+    const summaryHargaAsliProdukValue = document.getElementById("summaryHargaAsliProdukValue");
+    const summaryTargetHargaBersihValue = document.getElementById("summaryTargetHargaBersihValue");
+    const finalResultLabel = document.getElementById("finalResultLabel");
+    const finalTotalDisplay = document.getElementById("finalTotal");
+    const rekomendasiHargaJualRow = document.getElementById('rekomendasiHargaJualRow');
+    const rekomendasiHargaJualValue = document.getElementById('rekomendasiHargaJualValue');
+
+    let biayaAdministrasi = 0;
+    let biayaGratisOngkirXTRA_rupiah = 0;
+    let biayaPromoXTRA_rupiah = 0;
+    let biayaLiveXTRA_rupiah = 0;
+    let TotalBiayaLayanan = 0;
+    let danaDiterimaPenjual = 0;
+
+    function calculateFees(currentPembayaranPembeli) {
+        let adminFee = currentPembayaranPembeli * (persentaseBiayaAdmin / 100);
+        let goXtraFee = 0;
+        if (promoProgramSelected !== 'tidak' && biayaGratisOngkirXTRA_persen > 0) {
+            goXtraFee = Math.min(currentPembayaranPembeli * (biayaGratisOngkirXTRA_persen / 100), MAX_CAP_GO_XTRA);
+        }
+        let promoXtraFee = 0;
+        if (promoProgramSelected !== 'tidak' && biayaPromoXTRA_persen > 0) {
+            promoXtraFee = Math.min(currentPembayaranPembeli * (biayaPromoXTRA_persen / 100), MAX_CAP_PROMO_XTRA);
+        }
+        let liveXtraFee = 0;
+        if (document.getElementById('liveXTRAToggle').value === 'ya' && biayaLiveXTRA_persen > 0) {
+            liveXtraFee = Math.min(currentPembayaranPembeli * (biayaLiveXTRA_persen / 100), MAX_CAP_LIVE_XTRA);
+        }
+        let programLainnyaFee = BiayaProgram; // Ini adalah biaya tetap, tidak bergantung pada harga
+        return {
+            admin: adminFee,
+            goXtra: goXtraFee,
+            promoXtra: promoXtraFee,
+            liveXtra: liveXtraFee,
+            programLainnya: programLainnyaFee,
+            total: adminFee + goXtraFee + promoXtraFee + liveXtraFee + programLainnyaFee
+        };
+    }
+
+    if (mode === 'fromHargaBarang') {
+        hargaAsliProduk = cleanAndParse(document.getElementById("hargaAsliProduk").value);
+
+        if (document.getElementById('diskonPenjualToggle').value === 'ya') {
+            if (diskonProdukUnit === 'rupiah') {
+                DiskonProduk_rupiah = DiskonProduk_value;
+            } else {
+                DiskonProduk_rupiah = hargaAsliProduk * (DiskonProduk_value / 100);
+            }
+            if (VoucherTokoUnit === 'rupiah') {
+                VoucherToko_rupiah = VoucherToko_value;
+            } else {
+                VoucherToko_rupiah = hargaAsliProduk * (VoucherToko_value / 100);
+            }
+        }
+
+        totalPembayaranPembeli = Math.max(0, hargaAsliProduk - DiskonProduk_rupiah - VoucherToko_rupiah);
+        const fees = calculateFees(totalPembayaranPembeli);
+        biayaAdministrasi = fees.admin;
+        biayaGratisOngkirXTRA_rupiah = fees.goXtra;
+        biayaPromoXTRA_rupiah = fees.promoXtra;
+        biayaLiveXTRA_rupiah = fees.liveXtra;
+        TotalBiayaLayanan = fees.total;
+        danaDiterimaPenjual = totalPembayaranPembeli - TotalBiayaLayanan;
+
+        summaryTitle.innerText = "Ringkasan Input:";
+        summaryHargaAsliProdukValue.innerText = formatNumber(hargaAsliProduk);
+        document.getElementById('summaryHargaAsliProdukRow').classList.remove('hidden');
+        document.getElementById('summaryTargetHargaBersihRow').classList.add('hidden');
+        rekomendasiHargaJualRow.classList.add('hidden');
+        finalResultLabel.innerText = "Dana Diterima Penjual:";
+        finalTotalDisplay.innerText = formatNumber(danaDiterimaPenjual);
+
+    } else {
+        targetDanaDiterimaPenjual = cleanAndParse(document.getElementById("targetHargaBersih").value);
+
+        let initialTotalPercentageFees = (persentaseBiayaAdmin + biayaGratisOngkirXTRA_persen + biayaPromoXTRA_persen + biayaLiveXTRA_persen) / 100;
+        hargaAsliProduk = targetDanaDiterimaPenjual / (1 - initialTotalPercentageFees);
+        hargaAsliProduk = Math.max(0, hargaAsliProduk + BiayaProgram);
+
+        for (let i = 0; i < 20; i++) {
+            let currentDiskonProduk_rupiah = 0;
+            if (document.getElementById('diskonPenjualToggle').value === 'ya') {
+                if (diskonProdukUnit === 'rupiah') {
+                    currentDiskonProduk_rupiah = DiskonProduk_value;
+                } else {
+                    currentDiskonProduk_rupiah = hargaAsliProduk * (DiskonProduk_value / 100);
+                }
+            }
+            let currentVoucherToko_rupiah = 0;
+            if (document.getElementById('diskonPenjualToggle').value === 'ya') {
+                if (VoucherTokoUnit === 'rupiah') {
+                    currentVoucherToko_rupiah = VoucherToko_value;
+                } else {
+                    currentVoucherToko_rupiah = hargaAsliProduk * (VoucherToko_value / 100);
+                }
+            }
+
+            totalPembayaranPembeli = Math.max(0, hargaAsliProduk - currentDiskonProduk_rupiah - currentVoucherToko_rupiah);
+            const fees = calculateFees(totalPembayaranPembeli);
+            biayaAdministrasi = fees.admin;
+            biayaGratisOngkirXTRA_rupiah = fees.goXtra;
+            biayaPromoXTRA_rupiah = fees.promoXtra;
+            biayaLiveXTRA_rupiah = fees.liveXtra;
+            TotalBiayaLayanan = fees.total;
+            danaDiterimaPenjual = totalPembayaranPembeli - TotalBiayaLayanan;
+
+            const selisih = targetDanaDiterimaPenjual - danaDiterimaPenjual;
+            hargaAsliProduk += selisih;
+            hargaAsliProduk = Math.max(0, hargaAsliProduk);
+        }
+
+        if (document.getElementById('diskonPenjualToggle').value === 'ya') {
+            if (diskonProdukUnit === 'rupiah') {
+                DiskonProduk_rupiah = DiskonProduk_value;
+            } else {
+                DiskonProduk_rupiah = hargaAsliProduk * (DiskonProduk_value / 100);
+            }
+            if (VoucherTokoUnit === 'rupiah') {
+                VoucherToko_rupiah = VoucherToko_value;
+            } else {
+                VoucherToko_rupiah = hargaAsliProduk * (VoucherToko_value / 100);
+            }
+        }
+
+        totalPembayaranPembeli = Math.max(0, hargaAsliProduk - DiskonProduk_rupiah - VoucherToko_rupiah);
+        const finalFees = calculateFees(totalPembayaranPembeli);
+        biayaAdministrasi = finalFees.admin;
+        biayaGratisOngkirXTRA_rupiah = finalFees.goXtra;
+        biayaPromoXTRA_rupiah = finalFees.promoXtra;
+        biayaLiveXTRA_rupiah = finalFees.liveXtra;
+        TotalBiayaLayanan = finalFees.total;
+        danaDiterimaPenjual = totalPembayaranPembeli - TotalBiayaLayanan;
+
+        summaryTitle.innerText = "Ringkasan Input:";
+        document.getElementById('summaryHargaAsliProdukRow').classList.add('hidden');
+        document.getElementById('summaryTargetHargaBersihRow').classList.remove('hidden');
+        summaryTargetHargaBersihValue.innerText = formatNumber(targetDanaDiterimaPenjual);
+        rekomendasiHargaJualRow.classList.remove('hidden');
+        rekomendasiHargaJualValue.innerText = formatNumber(Math.round(hargaAsliProduk));
+        finalResultLabel.innerText = "Dana Diterima Penjual (Aktual):";
+        finalTotalDisplay.innerText = formatNumber(danaDiterimaPenjual);
+    }
+
+    // Update output
+    document.getElementById("resultBiayaAdmin").innerText = formatNumber(biayaAdministrasi);
+    document.getElementById("resultGratisOngkirXTRA").innerText = formatNumber(biayaGratisOngkirXTRA_rupiah);
+    document.getElementById("resultPromoXTRA").innerText = formatNumber(biayaPromoXTRA_rupiah);
+    document.getElementById("resultLiveXTRA").innerText = formatNumber(biayaLiveXTRA_rupiah);
+    document.getElementById("resultBiayaProgram").innerText = formatNumber(BiayaProgram);
+    document.getElementById("resultDiskonProduk").innerText = formatNumber(DiskonProduk_rupiah);
+    document.getElementById("resultVoucherToko").innerText = formatNumber(VoucherToko_rupiah);
+
+    document.getElementById('rowBiayaGratisOngkirXTRA').classList.toggle('hidden', biayaGratisOngkirXTRA_rupiah === 0);
+    document.getElementById('rowBiayaPromoXTRA').classList.toggle('hidden', biayaPromoXTRA_rupiah === 0);
+    document.getElementById('rowBiayaLiveXTRA').classList.toggle('hidden', biayaLiveXTRA_rupiah === 0);
+    document.getElementById('rowBiayaProgram').classList.toggle('hidden', BiayaProgram === 0);
+    document.getElementById('rowDiskonProduk').classList.toggle('hidden', DiskonProduk_rupiah === 0 || document.getElementById('diskonPenjualToggle').value === 'tidak');
+    document.getElementById('rowVoucherToko').classList.toggle('hidden', VoucherToko_rupiah === 0 || document.getElementById('diskonPenjualToggle').value === 'tidak');
+
+    document.getElementById("TotalBiayaLayanan").innerText = formatNumber(TotalBiayaLayanan);
+    document.getElementById("summaryTotalPembayaranPembeli").innerText = formatNumber(totalPembayaranPembeli);
+
+    // Update Summary
+    let summaryDiskonProdukText = formatNumber(DiskonProduk_rupiah);
+    if (diskonProdukUnit === 'persen' && cleanAndParse(document.getElementById("DiskonProduk").value, 'persen') > 0) {
+        summaryDiskonProdukText += ` (${cleanAndParse(document.getElementById("DiskonProduk").value, 'persen')}%)`;
+    }
+    document.getElementById("summaryDiskonProduk").innerText = summaryDiskonProdukText;
+
+    let summaryVoucherTokoText = formatNumber(VoucherToko_rupiah);
+    if (VoucherTokoUnit === 'persen' && cleanAndParse(document.getElementById("VoucherToko").value, 'persen') > 0) {
+        summaryVoucherTokoText += ` (${cleanAndParse(document.getElementById("VoucherToko").value, 'persen')}%)`;
+    }
+    document.getElementById("summaryVoucherToko").innerText = summaryVoucherTokoText;
+
+    document.getElementById("summaryPersentaseBiayaAdmin").innerText = persentaseBiayaAdmin + "%";
+
+    document.getElementById("summaryDiskonProdukRow").classList.toggle('hidden', DiskonProduk_rupiah === 0 && document.getElementById('diskonPenjualToggle').value === 'tidak');
+    document.getElementById("summaryVoucherTokoRow").classList.toggle('hidden', VoucherToko_rupiah === 0 && document.getElementById('diskonPenjualToggle').value === 'tidak');
+    document.getElementById("summaryPromoXTRARow").classList.toggle('hidden', biayaPromoXTRA_persen === 0 || promoProgramSelected === 'tidak');
+    document.getElementById("summaryMaxCapPromoXTRARow").classList.toggle('hidden', biayaPromoXTRA_persen === 0 || promoProgramSelected === 'tidak');
+    document.getElementById("summaryGratisOngkirXTRARow").classList.toggle('hidden', biayaGratisOngkirXTRA_persen === 0 || promoProgramSelected === 'tidak');
+    document.getElementById("summaryMaxCapGratisOngkirXTRARow").classList.toggle('hidden', biayaGratisOngkirXTRA_persen === 0 || promoProgramSelected === 'tidak');
+    document.getElementById("summaryLiveXTRARow").classList.toggle('hidden', biayaLiveXTRA_persen === 0 || document.getElementById('liveXTRAToggle').value === 'tidak');
+    document.getElementById("summaryMaxCapLiveXTRARow").classList.toggle('hidden', biayaLiveXTRA_persen === 0 || document.getElementById('liveXTRAToggle').value === 'tidak');
+    document.getElementById("summaryBiayaProgramRow").classList.toggle('hidden', BiayaProgram === 0);
+
+    document.getElementById("summaryGratisOngkirXTRA").innerText = biayaGratisOngkirXTRA_persen + "%";
+    document.getElementById("summaryMaxCapGratisOngkirXTRA").innerText = formatNumber(MAX_CAP_GO_XTRA);
+    document.getElementById("summaryPromoXTRA").innerText = biayaPromoXTRA_persen + "%";
+    document.getElementById("summaryMaxCapPromoXTRA").innerText = formatNumber(MAX_CAP_PROMO_XTRA);
+    document.getElementById("summaryLiveXTRA").innerText = biayaLiveXTRA_persen + "%";
+    document.getElementById("summaryMaxCapLiveXTRA").innerText = formatNumber(MAX_CAP_LIVE_XTRA);
+    document.getElementById("summaryBiayaProgram").innerText = formatNumber(BiayaProgram);
+
+    document.getElementById("resultSection").classList.remove("hidden");
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!document.getElementById('hargaAsliProduk').value) document.getElementById('hargaAsliProduk').value = '0';
+    if (!document.getElementById('targetHargaBersih').value) document.getElementById('targetHargaBersih').value = '0';
+    if (!document.getElementById('BiayaProgram').value) document.getElementById('BiayaProgram').value = '0';
+
+    toggleInputMode();
+    updatePromoInputs();
+    toggleDiskonPenjualInputs();
+    toggleLiveXTRAInput();
+
+    document.getElementById("resultSection").classList.add("hidden");
+});
 </script>
 
 </body>
